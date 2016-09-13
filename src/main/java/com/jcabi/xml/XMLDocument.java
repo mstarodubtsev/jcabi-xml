@@ -79,19 +79,19 @@ public final class XMLDocument implements XML {
      * XPath factory.
      */
     private static final XPathFactory XFACTORY =
-        XPathFactory.newInstance();
+            XPathFactory.newInstance();
 
     /**
      * Transformer factory.
      */
     private static final TransformerFactory TFACTORY =
-        TransformerFactory.newInstance();
+            TransformerFactory.newInstance();
 
     /**
      * DOM document builder factory.
      */
     private static final DocumentBuilderFactory DFACTORY =
-        DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory.newInstance();
 
     /**
      * Namespace context to use for {@link #xpath(String)}
@@ -119,9 +119,9 @@ public final class XMLDocument implements XML {
         if (XMLDocument.DFACTORY.getClass().getName().contains("xerces")) {
             try {
                 XMLDocument.DFACTORY.setFeature(
-                    // @checkstyle LineLength (1 line)
-                    "http://apache.org/xml/features/nonvalidating/load-external-dtd",
-                    false
+                        // @checkstyle LineLength (1 line)
+                        "http://apache.org/xml/features/nonvalidating/load-external-dtd",
+                        false
                 );
             } catch (final ParserConfigurationException ex) {
                 throw new IllegalStateException(ex);
@@ -153,9 +153,9 @@ public final class XMLDocument implements XML {
      */
     public XMLDocument(final String text) {
         this(
-            new DomParser(XMLDocument.DFACTORY, text).document(),
-            new XPathContext(),
-            false
+                new DomParser(XMLDocument.DFACTORY, text).document(),
+                new XPathContext(),
+                false
         );
     }
 
@@ -268,17 +268,24 @@ public final class XMLDocument implements XML {
      * @param lfe Is it a leaf node?
      */
     private XMLDocument(final Node node, final XPathContext ctx,
-        final boolean lfe) {
-        this.xml = XMLDocument.asString(node);
+                        final boolean lfe) {
         this.context = ctx;
+        this.xml = XMLDocument.asString(node);
         this.leaf = lfe;
         this.cache = node;
     }
 
     @Override
-    public String toString() {
-        return this.xml;
+    public String toString() { return xml; }
+
+    public String toCompactString() {
+        return asString((Node)this.cache, false, 0);
     }
+
+    public String toPrettyString(int indentAmount) {
+        return asString((Node)this.cache, true, indentAmount);
+    }
+
 
     @Override
     public Node node() {
@@ -294,12 +301,12 @@ public final class XMLDocument implements XML {
 
     @Override
     @SuppressWarnings
-        (
-            {
-                "PMD.ExceptionAsFlowControl",
-                "PMD.PreserveStackTrace"
-            }
-        )
+            (
+                    {
+                            "PMD.ExceptionAsFlowControl",
+                            "PMD.PreserveStackTrace"
+                    }
+            )
     public List<String> xpath(final String query) {
         List<String> items;
         try {
@@ -308,13 +315,13 @@ public final class XMLDocument implements XML {
             for (int idx = 0; idx < nodes.getLength(); ++idx) {
                 final int type = nodes.item(idx).getNodeType();
                 if (type != Node.TEXT_NODE && type != Node.ATTRIBUTE_NODE
-                    && type != Node.CDATA_SECTION_NODE) {
+                        && type != Node.CDATA_SECTION_NODE) {
                     throw new IllegalArgumentException(
-                        String.format(
-                            // @checkstyle LineLength (1 line)
-                            "Only text() nodes or attributes are retrievable with xpath() '%s': %d",
-                            query, type
-                        )
+                            String.format(
+                                    // @checkstyle LineLength (1 line)
+                                    "Only text() nodes or attributes are retrievable with xpath() '%s': %d",
+                                    query, type
+                            )
                     );
                 }
                 items.add(nodes.item(idx).getNodeValue());
@@ -322,15 +329,15 @@ public final class XMLDocument implements XML {
         } catch (final XPathExpressionException ex) {
             try {
                 items = Collections.singletonList(
-                    this.fetch(query, String.class)
+                        this.fetch(query, String.class)
                 );
             } catch (final XPathExpressionException exp) {
                 throw new IllegalArgumentException(
-                    // @checkstyle MultipleStringLiterals (1 line)
-                    String.format(
-                        "invalid XPath query '%s' at %s",
-                        query, XMLDocument.XFACTORY.getClass().getName()
-                    ), exp
+                        // @checkstyle MultipleStringLiterals (1 line)
+                        String.format(
+                                "invalid XPath query '%s' at %s",
+                                query, XMLDocument.XFACTORY.getClass().getName()
+                        ), exp
                 );
             }
         }
@@ -340,7 +347,7 @@ public final class XMLDocument implements XML {
     @Override
     public XML registerNs(final String prefix, final Object uri) {
         return new XMLDocument(
-            this.node(), this.context.add(prefix, uri), this.leaf
+                this.node(), this.context.add(prefix, uri), this.leaf
         );
     }
 
@@ -353,18 +360,18 @@ public final class XMLDocument implements XML {
             items = new ArrayList<XML>(nodes.getLength());
             for (int idx = 0; idx < nodes.getLength(); ++idx) {
                 items.add(
-                    new XMLDocument(
-                        nodes.item(idx),
-                        this.context, true
-                    )
+                        new XMLDocument(
+                                nodes.item(idx),
+                                this.context, true
+                        )
                 );
             }
         } catch (final XPathExpressionException ex) {
             throw new IllegalArgumentException(
-                String.format(
-                    "invalid XPath query '%s' by %s",
-                    query, XMLDocument.XFACTORY.getClass().getName()
-                ), ex
+                    String.format(
+                            "invalid XPath query '%s' by %s",
+                            query, XMLDocument.XFACTORY.getClass().getName()
+                    ), ex
             );
         }
         return new ListWrapper<XML>(items, this.node(), query);
@@ -408,7 +415,7 @@ public final class XMLDocument implements XML {
      */
     @SuppressWarnings("unchecked")
     private <T> T fetch(final String query, final Class<T> type)
-        throws XPathExpressionException {
+            throws XPathExpressionException {
         final XPath xpath;
         synchronized (XMLDocument.class) {
             xpath = XMLDocument.XFACTORY.newXPath();
@@ -421,12 +428,22 @@ public final class XMLDocument implements XML {
             qname = XPathConstants.NODESET;
         } else {
             throw new IllegalArgumentException(
-                String.format(
-                    "Unsupported type: %s", type.getName()
-                )
+                    String.format(
+                            "Unsupported type: %s", type.getName()
+                    )
             );
         }
         return (T) xpath.evaluate(query, this.node(), qname);
+    }
+
+    /**
+     * Transform node to String without indents.
+     *
+     * @param node The DOM node.
+     * @return String representation
+     */
+    private static String asString(final Node node) {
+        return asString(node, true, 0);
     }
 
     /**
@@ -435,7 +452,7 @@ public final class XMLDocument implements XML {
      * @param node The DOM node.
      * @return String representation
      */
-    private static String asString(final Node node) {
+    private static String asString(final Node node, boolean indent, int indentAmount) {
         final StringWriter writer = new StringWriter();
         try {
             final Transformer trans;
@@ -443,15 +460,21 @@ public final class XMLDocument implements XML {
                 trans = XMLDocument.TFACTORY.newTransformer();
             }
             // @checkstyle MultipleStringLiterals (1 line)
-            trans.setOutputProperty(OutputKeys.INDENT, "yes");
+//            System.out.println(System.getProperty("javax.xml.transform.TransformerFactory"));
+//            System.out.println(XMLDocument.TFACTORY.getClass());
+//            System.out.println(trans.getClass());
+            if (indent) {
+                trans.setOutputProperty(OutputKeys.INDENT, "yes");
+                trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", String.valueOf(indentAmount));
+            }
             trans.setOutputProperty(OutputKeys.VERSION, "1.0");
             if (!(node instanceof Document)) {
                 trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             }
             synchronized (node) {
                 trans.transform(
-                    new DOMSource(node),
-                    new StreamResult(writer)
+                        new DOMSource(node),
+                        new StreamResult(writer)
                 );
             }
         } catch (final TransformerConfigurationException ex) {

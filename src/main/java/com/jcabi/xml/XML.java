@@ -151,4 +151,8 @@ public interface XML {
      */
     Node node();
 
+    String toCompactString();
+
+    String toPrettyString(int indentAmount);
+
 }

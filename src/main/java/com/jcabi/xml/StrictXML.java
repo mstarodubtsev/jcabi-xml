@@ -101,18 +101,18 @@ public final class StrictXML implements XML {
     {
         if (!errors.isEmpty()) {
             Logger.warn(
-                StrictXML.class,
-                "%d XML validation error(s):\n  %s\n%s",
-                errors.size(),
-                StrictXML.join(StrictXML.print(errors), "\n  "),
-                xml
+                    StrictXML.class,
+                    "%d XML validation error(s):\n  %s\n%s",
+                    errors.size(),
+                    StrictXML.join(StrictXML.print(errors), "\n  "),
+                    xml
             );
             throw new IllegalArgumentException(
-                String.format(
-                    "%d error(s) in XML document: %s",
-                    errors.size(),
-                    StrictXML.join(StrictXML.print(errors), ";")
-                )
+                    String.format(
+                            "%d error(s) in XML document: %s",
+                            errors.size(),
+                            StrictXML.join(StrictXML.print(errors), ";")
+                    )
             );
         }
         this.origin = xml;
@@ -121,6 +121,16 @@ public final class StrictXML implements XML {
     @Override
     public String toString() {
         return this.origin.toString();
+    }
+
+    @Override
+    public String toCompactString() {
+        return this.origin.toCompactString();
+    }
+
+    @Override
+    public String toPrettyString(int indentAmount) {
+        return this.origin.toPrettyString(indentAmount);
     }
 
     @Override
@@ -154,16 +164,16 @@ public final class StrictXML implements XML {
      * @return List of messages to print
      */
     private static Iterable<String> print(
-        final Collection<SAXParseException> errors) {
+            final Collection<SAXParseException> errors) {
         final Collection<String> lines = new ArrayList<String>(errors.size());
         for (final SAXParseException error : errors) {
             lines.add(
-                String.format(
-                    "%d:%d: %s",
-                    error.getLineNumber(),
-                    error.getColumnNumber(),
-                    error.getMessage()
-                )
+                    String.format(
+                            "%d:%d: %s",
+                            error.getLineNumber(),
+                            error.getColumnNumber(),
+                            error.getMessage()
+                    )
             );
         }
         return lines;
@@ -201,14 +211,14 @@ public final class StrictXML implements XML {
      * @return List of validation errors
      */
     private static Collection<SAXParseException> validate(
-        final XML xml,
-        final Validator validator) {
+            final XML xml,
+            final Validator validator) {
         final Collection<SAXParseException> errors =
-            new CopyOnWriteArrayList<SAXParseException>();
+                new CopyOnWriteArrayList<SAXParseException>();
         final int max = 3;
         try {
             validator.setErrorHandler(
-                new XSDDocument.ValidationHandler(errors)
+                    new XSDDocument.ValidationHandler(errors)
             );
             final DOMSource dom = new DOMSource(xml.node());
             for (int retry = 1; retry <= max; ++retry) {
@@ -217,12 +227,12 @@ public final class StrictXML implements XML {
                     break;
                 } catch (final SocketException ex) {
                     Logger.error(
-                        StrictXML.class,
-                        "Try #%d of %d failed: %s: %s",
-                        retry,
-                        max,
-                        ex.getClass().getName(),
-                        ex.getMessage()
+                            StrictXML.class,
+                            "Try #%d of %d failed: %s: %s",
+                            retry,
+                            max,
+                            ex.getClass().getName(),
+                            ex.getMessage()
                     );
                     if (retry == max) {
                         throw new IllegalStateException(ex);
@@ -244,9 +254,9 @@ public final class StrictXML implements XML {
     private static Validator newValidator() {
         try {
             final Validator validator = SchemaFactory
-                .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-                .newSchema()
-                .newValidator();
+                    .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                    .newSchema()
+                    .newValidator();
             validator.setResourceResolver(new ClasspathResolver());
             return validator;
         } catch (final SAXException ex) {
